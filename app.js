@@ -33,6 +33,20 @@ class AudiobookPlayer {
         this.currentTrackEl = document.getElementById('current-track');
         this.currentProgressEl = document.getElementById('current-progress');
         this.playlistEl = document.getElementById('playlist');
+        
+        // Control buttons
+        this.playPauseBtn = document.getElementById('play-pause-btn');
+        this.prevBtn = document.getElementById('prev-btn');
+        this.nextBtn = document.getElementById('next-btn');
+        this.playIcon = document.getElementById('play-icon');
+        this.pauseIcon = document.getElementById('pause-icon');
+        
+        // Progress bar
+        this.progressBar = document.getElementById('progress-bar');
+        this.progressFill = document.getElementById('progress-fill');
+        this.currentTimeEl = document.getElementById('current-time');
+        this.totalTimeEl = document.getElementById('total-time');
+        
         this.currentChapter = 0;
         this.isPlaying = false;
         
@@ -69,6 +83,7 @@ class AudiobookPlayer {
     }
     
     setupEventListeners() {
+        // Audio events
         this.audioPlayer.addEventListener('ended', () => {
             this.playNext();
         });
@@ -79,6 +94,41 @@ class AudiobookPlayer {
         
         this.audioPlayer.addEventListener('loadedmetadata', () => {
             this.updateDuration();
+        });
+        
+        this.audioPlayer.addEventListener('play', () => {
+            this.isPlaying = true;
+            this.updatePlayPauseIcon();
+        });
+        
+        this.audioPlayer.addEventListener('pause', () => {
+            this.isPlaying = false;
+            this.updatePlayPauseIcon();
+        });
+        
+        // Button events
+        this.playPauseBtn.addEventListener('click', () => {
+            if (this.isPlaying) {
+                this.pause();
+            } else {
+                this.play();
+            }
+        });
+        
+        this.prevBtn.addEventListener('click', () => {
+            this.playPrevious();
+        });
+        
+        this.nextBtn.addEventListener('click', () => {
+            this.playNext();
+        });
+        
+        // Progress bar click
+        this.progressBar.addEventListener('click', (e) => {
+            const rect = this.progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            const time = percent * this.audioPlayer.duration;
+            this.audioPlayer.currentTime = time;
         });
     }
     
@@ -101,6 +151,7 @@ class AudiobookPlayer {
     play() {
         this.audioPlayer.play().then(() => {
             this.isPlaying = true;
+            this.updatePlayPauseIcon();
         }).catch(err => {
             console.error('Playback failed:', err);
         });
@@ -109,6 +160,19 @@ class AudiobookPlayer {
     pause() {
         this.audioPlayer.pause();
         this.isPlaying = false;
+        this.updatePlayPauseIcon();
+    }
+    
+    updatePlayPauseIcon() {
+        if (this.isPlaying) {
+            this.playIcon.style.display = 'none';
+            this.pauseIcon.style.display = 'block';
+            this.playPauseBtn.setAttribute('title', 'Pause');
+        } else {
+            this.playIcon.style.display = 'block';
+            this.pauseIcon.style.display = 'none';
+            this.playPauseBtn.setAttribute('title', 'Play');
+        }
     }
     
     playNext() {
@@ -119,26 +183,40 @@ class AudiobookPlayer {
     }
     
     playPrevious() {
-        if (this.currentChapter > 0) {
+        // If more than 3 seconds in, restart current chapter
+        if (this.audioPlayer.currentTime > 3) {
+            this.audioPlayer.currentTime = 0;
+        } else if (this.currentChapter > 0) {
             this.loadChapter(this.currentChapter - 1);
             this.play();
         }
     }
     
     updateProgress() {
-        const current = this.formatTime(this.audioPlayer.currentTime);
-        const duration = this.formatTime(this.audioPlayer.duration || 0);
-        this.currentProgressEl.textContent = `${current} / ${duration}`;
+        const current = this.audioPlayer.currentTime;
+        const duration = this.audioPlayer.duration || 0;
+        
+        // Update time display
+        this.currentTimeEl.textContent = this.formatTime(current);
+        
+        // Update progress bar
+        const percent = duration > 0 ? (current / duration) * 100 : 0;
+        this.progressFill.style.width = percent + '%';
+        
+        // Update subtitle
+        const currentStr = this.formatTime(current);
+        const durationStr = this.formatTime(duration);
+        this.currentProgressEl.textContent = `${currentStr} / ${durationStr}`;
     }
     
     updateDuration() {
-        const chapter = CHAPTERS[this.currentChapter];
-        const duration = this.formatTime(this.audioPlayer.duration);
+        const duration = this.audioPlayer.duration;
+        this.totalTimeEl.textContent = this.formatTime(duration);
         
         // Update duration in playlist
         const item = this.playlistEl.querySelector(`li[data-index="${this.currentChapter}"]`);
         if (item) {
-            item.querySelector('.chapter-duration').textContent = duration;
+            item.querySelector('.chapter-duration').textContent = this.formatTime(duration);
         }
     }
     

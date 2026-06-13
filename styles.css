@@ -212,10 +212,100 @@ body {
     font-size: 0.9rem;
 }
 
-audio {
-    width: 100%;
+/* Audio Controls */
+.audio-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     padding: 24px;
     background: white;
+    border-bottom: 1px solid var(--border);
+}
+
+.control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+}
+
+.control-btn:hover {
+    background: #e2e8f0;
+    transform: scale(1.1);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+#prev-btn,
+#next-btn {
+    width: 44px;
+    height: 44px;
+}
+
+#play-pause-btn {
+    width: 56px;
+    height: 56px;
+    background: var(--primary);
+    color: white;
+}
+
+#play-pause-btn:hover {
+    background: var(--primary-dark);
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px 24px;
+    background: white;
+}
+
+#current-time,
+#total-time {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-variant-numeric: tabular-nums;
+    min-width: 40px;
+}
+
+#total-time {
+    text-align: right;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.progress-bar:hover .progress-fill {
+    background: var(--primary-dark);
+}
+
+audio {
+    display: none;
 }
 
 .playlist {
@@ -355,5 +445,20 @@ footer p {
     
     .toc-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .audio-controls {
+        gap: 12px;
+    }
+    
+    #prev-btn,
+    #next-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    #play-pause-btn {
+        width: 48px;
+        height: 48px;
     }
 }
