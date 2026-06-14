@@ -51,6 +51,7 @@ class AudiobookPlayer {
         this.isPlaying = false;
         
         this.init();
+        this.pendingPlay = false;
     }
     
     init() {
@@ -96,6 +97,19 @@ class AudiobookPlayer {
             this.updateDuration();
         });
         
+        // CRITICAL FIX: Wait for audio to be ready before playing
+        this.audioPlayer.addEventListener('canplay', () => {
+            if (this.pendingPlay) {
+                this.pendingPlay = false;
+                this.audioPlayer.play().then(() => {
+                    this.isPlaying = true;
+                    this.updatePlayPauseIcon();
+                }).catch(err => {
+                    console.error('Playback failed:', err);
+                });
+            }
+        });
+        
         this.audioPlayer.addEventListener('play', () => {
             this.isPlaying = true;
             this.updatePlayPauseIcon();
@@ -136,6 +150,7 @@ class AudiobookPlayer {
         this.currentChapter = index;
         const chapter = CHAPTERS[index];
         
+        // Update source
         this.audioPlayer.src = chapter.file;
         this.currentTrackEl.textContent = chapter.title;
         this.currentProgressEl.textContent = 'Ready to play';
@@ -145,16 +160,15 @@ class AudiobookPlayer {
             item.classList.toggle('active', i === index);
         });
         
-        this.audioPlayer.load();
+        // Reset progress
+        this.progressFill.style.width = '0%';
+        this.currentTimeEl.textContent = '0:00';
+        this.totalTimeEl.textContent = '--:--';
     }
     
     play() {
-        this.audioPlayer.play().then(() => {
-            this.isPlaying = true;
-            this.updatePlayPauseIcon();
-        }).catch(err => {
-            console.error('Playback failed:', err);
-        });
+        this.pendingPlay = true;
+        this.audioPlayer.load(); // Force reload to ensure canplay event fires
     }
     
     pause() {
