@@ -49,9 +49,9 @@ class AudiobookPlayer {
         
         this.currentChapter = 0;
         this.isPlaying = false;
+        this.pendingPlay = false;
         
         this.init();
-        this.pendingPlay = false;
     }
     
     init() {
@@ -174,6 +174,7 @@ class AudiobookPlayer {
     pause() {
         this.audioPlayer.pause();
         this.isPlaying = false;
+        this.pendingPlay = false;
         this.updatePlayPauseIcon();
     }
     
